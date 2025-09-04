@@ -1,90 +1,54 @@
--- Initialize OpenGL with full screen
 gl.setup(NATIVE_WIDTH, NATIVE_HEIGHT)
+util.no_globals()
 
-local json = require "json"
 local font = resource.load_font("Roboto-Bold.ttf")
 
--- Default menu items (overridden if node.json is used)
-local settings = {
-    menu = {
-        items = {
-            { id="wedding", label="Wedding fayre" },
-            { id="light", label="Serving Times (light mode)" },
-            { id="dark", label="Serving Times (dark mode)" }
-        }
-    }
+-- Menu setup
+local menu_items = {
+    { id="wedding", label="Wedding fayre" },
+    { id="light", label="Serving Times (light mode)" },
+    { id="dark", label="Serving Times (dark mode)" }
 }
-
--- Watch for node.json updates
-util.data_mapper{
-    ["config.json"] = function(raw)
-        local ok, parsed = pcall(json.decode, raw)
-        if ok and parsed.menu and parsed.menu.items then
-            settings = parsed
-        end
-    end
-}
-
--- Menu state
 local selected = 1
 local in_menu = true
-local running_playlist = nil
+local running_item = nil
 
--- Map GPIO pins to actions
-local BUTTONS = {
-    [18] = "POWER",
-    [23] = "UP",
-    [22] = "DOWN",
-    [4]  = "MENU",
-    [24] = "SELECT"
-}
-
--- Handle button events
-local function handle_button(action, state)
-    if state ~= 0 then return end -- Only act on press (active low)
-
-    if action == "UP" then
-        selected = (selected - 2) % #settings.menu.items + 1
-    elseif action == "DOWN" then
-        selected = (selected) % #settings.menu.items + 1
-    elseif action == "SELECT" then
-        in_menu = false
-        running_playlist = settings.menu.items[selected].label
-        start_playlist(settings.menu.items[selected].id)
-    elseif action == "MENU" then
-        in_menu = true
-        running_playlist = nil
-    elseif action == "POWER" then
-        log("Shutting down...")
-        os.execute("poweroff")
-    end
-end
-
--- Listen to messages from Python GPIO service
-node.event("message", function(msg)
-    local pin, state = msg:match("^/gpio:(%d+):(%d+)")
-    if pin and state then
-        pin = tonumber(pin)
-        state = tonumber(state)
-        local action = BUTTONS[pin]
-        if action then
-            handle_button(action, state)
+-- Handle button actions
+local function handle_button(action)
+    if in_menu then
+        if action == "UP" then
+            selected = (selected - 2) % #menu_items + 1
+        elseif action == "DOWN" then
+            selected = selected % #menu_items + 1
+        elseif action == "SELECT" then
+            in_menu = false
+            running_item = menu_items[selected].label
+        end
+    else
+        if action == "MENU" then
+            in_menu = true
+            running_item = nil
+        elseif action == "POWER" then
+            os.execute("poweroff")
         end
     end
-end)
-
--- Stub for playlist
-function start_playlist(id)
-    log("Starting playlist: " .. id)
-    -- TODO: trigger slideshow/video playback here
 end
+
+-- Map GPIO messages using demo-compatible util.data_mapper
+util.data_mapper{
+    up = function(state) if tonumber(state) == 0 then handle_button("UP") end end,
+    down = function(state) if tonumber(state) == 0 then handle_button("DOWN") end end,
+    select = function(state) if tonumber(state) == 0 then handle_button("SELECT") end end,
+    menu = function(state) if tonumber(state) == 0 then handle_button("MENU") end end,
+    power = function(state) if tonumber(state) == 0 then handle_button("POWER") end end,
+}
 
 -- Render loop
 function node.render()
     gl.clear(0,0,0,1) -- black background
 
     if in_menu then
-        for i, item in ipairs(settings.menu.items) do
+        for i, item in ipairs(menu_items) do
             local y = 100 + (i-1)*60
             if i == selected then
                 font:write(100, y, "> " .. item.label, 40, 1,1,0,1) -- yellow highlight
@@ -93,7 +57,7 @@ function node.render()
             end
         end
     else
-        font:write(100, 200, "Playing: " .. running_playlist, 50, 0,1,0,1)
+        font:write(100, 200, "Playing: " .. running_item, 50, 0,1,0,1)
         font:write(100, 300, "Press MENU to return", 30, 1,1,1,1)
     end
 end
