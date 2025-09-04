@@ -1,22 +1,65 @@
 {
   "name": "TCFK Display",
+  "custom_ui": "config.html",
   "permissions": {
     "gpio": "Allows access to GPIO pins for menu navigation"
   },
-  "config": {
-    "gpio_power": 18,
-    "gpio_up": 23,
-    "gpio_down": 22,
-    "gpio_menu": 4,
-    "gpio_select": 24
-  },
-  "menu": {
-    "title": "Main Menu",
-    "type": "list",
-    "items": [
-      { "id": "wedding", "label": "Wedding fayre" },
-      { "id": "light", "label": "Serving Times (light mode)" },
-      { "id": "dark", "label": "Serving Times (dark mode)" }
-    ]
-  }
+  "options": [
+    {
+      "title": "Expert GPIO configuration",
+      "type": "section",
+      "intro": "Configure the GPIO pins for buttons connected to the Raspberry Pi."
+    },
+    {
+      "title": "Power button GPIO",
+      "ui_width": 2,
+      "name": "gpio_power",
+      "type": "integer",
+      "default": 18
+    },
+    {
+      "title": "Up button GPIO",
+      "ui_width": 2,
+      "name": "gpio_up",
+      "type": "integer",
+      "default": 23
+    },
+    {
+      "title": "Down button GPIO",
+      "ui_width": 2,
+      "name": "gpio_down",
+      "type": "integer",
+      "default": 22
+    },
+    {
+      "title": "Menu button GPIO",
+      "ui_width": 2,
+      "name": "gpio_menu",
+      "type": "integer",
+      "default": 4
+    },
+    {
+      "title": "Select button GPIO",
+      "ui_width": 2,
+      "name": "gpio_select",
+      "type": "integer",
+      "default": 24
+    },
+    {
+      "title": "Main Menu",
+      "type": "section",
+      "intro": "Menu items displayed on the screen."
+    },
+    {
+      "title": "Menu items",
+      "name": "menu",
+      "type": "list",
+      "itemname": "Item",
+      "items": [
+        { "title": "Wedding fayre", "name": "wedding", "type": "string", "default": "Wedding fayre" },
+        { "title": "Serving Times (light mode)", "name": "light", "type": "string", "default": "Serving Times (light mode)" },
+        { "title": "Serving Times (dark mode)", "name": "dark", "type": "string", "default": "Serving Times (dark mode)" }
+      ]
+    }
+  ]
 }
