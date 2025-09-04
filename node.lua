@@ -1,9 +1,9 @@
 gl.setup(NATIVE_WIDTH, NATIVE_HEIGHT)
 util.no_globals()
 
-local font = resource.load_font(CONFIG.font or "Roboto-Bold.ttf")
+local font = resource.load_font("Roboto-Bold.ttf")  -- Ensure font is in resources/ or uploaded
 
--- Menu items (hardcoded for reliability, editable via CONFIG)
+-- Menu items
 local menu_items = {
     { id = "wedding", label = CONFIG.menu_item1_name or "Wedding fayre" },
     { id = "light", label = CONFIG.menu_item2_name or "Serving Times (light mode)" },
@@ -50,32 +50,45 @@ local function handle_button(action)
             debug("Returned to menu")
         elseif action == "power" then
             debug("Shutting down")
-            sys.shutdown()  -- Use sys.shutdown() instead of os.execute
+            sys.shutdown()
         end
     end
 end
 
--- Handle GPIO events
-node.event("input", function(topic, payload)
-    debug("Received event: " .. topic .. " = " .. payload)
-    if topic == "button" then
-        handle_button(payload)
-    end
-end)
+-- Map GPIO messages
+util.data_mapper{
+    up = function(state)
+        debug("Received up: " .. state)
+        if tonumber(state) == 0 then handle_button("up") end
+    end,
+    down = function(state)
+        debug("Received down: " .. state)
+        if tonumber(state) == 0 then handle_button("down") end
+    end,
+    select = function(state)
+        debug("Received select: " .. state)
+        if tonumber(state) == 0 then handle_button("select") end
+    end,
+    menu = function(state)
+        debug("Received menu: " .. state)
+        if tonumber(state) == 0 then handle_button("menu") end
+    end,
+    power = function(state)
+        debug("Received power: " .. state)
+        if tonumber(state) == 0 then handle_button("power") end
+    end,
+}
 
 -- Render loop
 function node.render()
-    local bg = util.parse_color(CONFIG.background_color or "#000000")
-    local text_color = util.parse_color(CONFIG.text_color or "#FFFFFF")
-    gl.clear(bg[1], bg[2], bg[3], bg[4])  -- Clear with config background
-
+    gl.clear(0, 0, 0, 1)  -- Black background
     if in_menu then
         for i, item in ipairs(menu_items) do
             local y = 100 + (i-1)*60
             if i == selected then
                 font:write(100, y, "> " .. item.label, 40, 1, 1, 0, 1)  -- Yellow highlight
             else
-                font:write(100, y, item.label, 40, text_color[1], text_color[2], text_color[3], text_color[4])
+                font:write(100, y, item.label, 40, 1, 1, 1, 1)  -- White text
             end
         end
     else
@@ -83,6 +96,6 @@ function node.render()
         if current_content then
             current_content:draw(0, 0, NATIVE_WIDTH, NATIVE_HEIGHT)
         end
-        font:write(100, 300, "Press MENU to return", 30, text_color[1], text_color[2], text_color[3], text_color[4])
+        font:write(100, 300, "Press MENU to return", 30, 1, 1, 1, 1)  -- White text
     end
 end
