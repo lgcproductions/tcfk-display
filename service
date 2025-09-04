@@ -21,5 +21,5 @@ for event in device.gpio.events():
     now = time.time()
     name = next((n for n, p in PINS.items() if p == event.pin), None)
     if name and event.value == 0 and now - last_event_time.get(name, 0) > debounce_delay:
-        node.send("%s:0" % name)  -- Send e.g., "up:0" to match util.data_mapper
+        node.send("%s:0" % name)  # Send e.g., "up:0" to match util.data_mapper
         last_event_time[name] = now
