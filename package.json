@@ -1,0 +1,12 @@
+{
+  "name": "TCFK-Display",
+  "version": "1.0.0",
+  "author": "Richard McCausland",
+  "description": "The Candy Floss King's master display used at wedding fayres and events",
+  "desc": "The Candy Floss King's master display used at wedding fayres and events",
+  "nodes": {
+    "main": {
+      "type": "node.lua"
+    }
+  }
+}
