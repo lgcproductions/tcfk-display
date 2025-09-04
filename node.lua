@@ -1,3 +1,5 @@
+gl.setup(NATIVE_WIDTH, NATIVE_HEIGHT)
+
 local json = require "json"
 local font = resource.load_font("Roboto-Bold.ttf")
 
