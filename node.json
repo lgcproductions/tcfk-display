@@ -1,0 +1,11 @@
+{
+  "menu": {
+    "title": "Main Menu",
+    "type": "list",
+    "items": [
+      { "id": "wedding", "label": "Wedding fayre" },
+      { "id": "light", "label": "Serving Times (light mode)" },
+      { "id": "dark", "label": "Serving Times (dark mode)" }
+    ]
+  }
+}
