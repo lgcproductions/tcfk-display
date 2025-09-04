@@ -1,30 +1,27 @@
-#!/usr/bin/python
-from hosted import device, node, config
+#!/usr/bin/env python
 
-# Pins to monitor
+from hosted import device, node
+import time
+
+# Your GPIO pins
 PINS = {
-    "POWER": 18,
-    "UP": 23,
-    "DOWN": 22,
-    "MENU": 4,
-    "SELECT": 24
+    'power': 18,
+    'up': 23,
+    'down': 22,
+    'menu': 4,
+    'select': 24
 }
 
-config.restart_on_update()
-device.gpio.monitor(list(PINS.values()))
+# Monitor pins with pull-up (assuming active-low buttons)
+for name, pin in PINS.items():
+    device.gpio.monitor(pin, pull_up=True)
 
-for pin, state in device.gpio.poll_forever():
-    # DEBUG: print every event
-    print("GPIO Event:", pin, state)
+last_event_time = {name: 0 for name in PINS}
+debounce_delay = 0.2  # 200ms debounce
 
-    # Send a separate message for each button
-    if pin == PINS["POWER"]:
-        node.send('/power:%d' % state)
-    elif pin == PINS["UP"]:
-        node.send('/up:%d' % state)
-    elif pin == PINS["DOWN"]:
-        node.send('/down:%d' % state)
-    elif pin == PINS["MENU"]:
-        node.send('/menu:%d' % state)
-    elif pin == PINS["SELECT"]:
-        node.send('/select:%d' % state)
+for event in device.gpio.events():
+    now = time.time()
+    name = next((n for n, p in PINS.items() if p == event.pin), None)
+    if name and event.value == 0 and now - last_event_time.get(name, 0) > debounce_delay:  # Button press (falling edge)
+        node.send("/button:%s" % name)
+        last_event_time[name] = now
