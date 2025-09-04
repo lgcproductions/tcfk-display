@@ -1,5 +1,8 @@
 {
   "name": "TCFK Display",
+  "permissions": {
+    "gpio": "Allows access to GPIO pins for menu navigation"
+  },
   "menu": {
     "title": "Main Menu",
     "type": "list",
