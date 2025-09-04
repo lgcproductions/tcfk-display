@@ -14,5 +14,14 @@ config.restart_on_update()
 device.gpio.monitor(list(PINS.values()))
 
 for pin, state in device.gpio.poll_forever():
-    # Send Lua message like /gpio:PIN:STATE
-    node.send('/gpio:%d:%d' % (pin, state))
+    # Send a separate message for each button
+    if pin == PINS["POWER"]:
+        node.send('/power:%d' % state)
+    elif pin == PINS["UP"]:
+        node.send('/up:%d' % state)
+    elif pin == PINS["DOWN"]:
+        node.send('/down:%d' % state)
+    elif pin == PINS["MENU"]:
+        node.send('/menu:%d' % state)
+    elif pin == PINS["SELECT"]:
+        node.send('/select:%d' % state)
