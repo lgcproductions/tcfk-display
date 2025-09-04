@@ -15,6 +15,7 @@ local running_item = nil
 
 -- Handle button actions
 local function handle_button(action)
+    print("Lua handling action:", action)  -- DEBUG
     if in_menu then
         if action == "UP" then
             selected = (selected - 2) % #menu_items + 1
@@ -36,11 +37,26 @@ end
 
 -- Map GPIO messages using demo-compatible util.data_mapper
 util.data_mapper{
-    up = function(state) if tonumber(state) == 0 then handle_button("UP") end end,
-    down = function(state) if tonumber(state) == 0 then handle_button("DOWN") end end,
-    select = function(state) if tonumber(state) == 0 then handle_button("SELECT") end end,
-    menu = function(state) if tonumber(state) == 0 then handle_button("MENU") end end,
-    power = function(state) if tonumber(state) == 0 then handle_button("POWER") end end,
+    up = function(state)
+        print("Lua received UP:", state)  -- DEBUG
+        if tonumber(state) == 0 then handle_button("UP") end
+    end,
+    down = function(state)
+        print("Lua received DOWN:", state)  -- DEBUG
+        if tonumber(state) == 0 then handle_button("DOWN") end
+    end,
+    select = function(state)
+        print("Lua received SELECT:", state)  -- DEBUG
+        if tonumber(state) == 0 then handle_button("SELECT") end
+    end,
+    menu = function(state)
+        print("Lua received MENU:", state)  -- DEBUG
+        if tonumber(state) == 0 then handle_button("MENU") end
+    end,
+    power = function(state)
+        print("Lua received POWER:", state)  -- DEBUG
+        if tonumber(state) == 0 then handle_button("POWER") end
+    end,
 }
 
 -- Render loop
