@@ -3,7 +3,7 @@ return {
     author = "Your Name",
     version = "1.0",
     desc = "Interactive menu controlled by GPIO buttons for selecting playlists/slideshows.",
-    setup = {
+    config = {
         title = "GPIO Menu",
         description = "Select slideshows using GPIO buttons",
         config = {
