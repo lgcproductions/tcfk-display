@@ -14,6 +14,9 @@ config.restart_on_update()
 device.gpio.monitor(list(PINS.values()))
 
 for pin, state in device.gpio.poll_forever():
+    # DEBUG: print every event
+    print("GPIO Event:", pin, state)
+
     # Send a separate message for each button
     if pin == PINS["POWER"]:
         node.send('/power:%d' % state)
