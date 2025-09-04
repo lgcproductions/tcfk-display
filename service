@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
-from hosted import device, node
+from hosted import device, node, config
 import time
 
+config.restart_on_update()  # Restart service on config changes (e.g., pin edits in dashboard)
+
+# Your GPIO pins
 PINS = {
     'power': 18,
     'up': 23,
@@ -11,15 +14,23 @@ PINS = {
     'select': 24
 }
 
+# Monitor pins with pull-up
 for name, pin in PINS.items():
     device.gpio.monitor(pin, pull_up=True)
 
-last_event_time = {name: 0 for name in PINS}
-debounce_delay = 0.2
+# Track last state and time for edge detection and debouncing
+last_state = {pin: True for pin in PINS.values()}  # Assume initial high
+last_event_time = {pin: 0 for pin in PINS.values()}
+debounce_delay = 0.2  # 200ms
 
-for event in device.gpio.events():
+print("Service started - monitoring GPIO pins")  # Debug log
+
+for pin, state in device.gpio.poll_forever():
+    name = next((n for n, p in PINS.items() if p == pin), None)
     now = time.time()
-    name = next((n for n, p in PINS.items() if p == event.pin), None)
-    if name and event.value == 0 and now - last_event_time.get(name, 0) > debounce_delay:
-        node.send("%s:0" % name)  # Send e.g., "up:0" to match util.data_mapper
-        last_event_time[name] = now
+    if name and not state and last_state[pin] and now - last_event_time[pin] > debounce_delay:
+        # Falling edge (press, active-low)
+        print("Press detected on %s (pin %d)" % (name, pin))  # Debug
+        node.send("%s:0" % name)  # Send to node.lua (e.g., "up:0")
+        last_event_time[pin] = now
+    last_state[pin] = state
