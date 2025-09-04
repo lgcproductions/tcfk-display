@@ -1,9 +1,10 @@
+-- Initialize OpenGL with full screen
 gl.setup(NATIVE_WIDTH, NATIVE_HEIGHT)
 
 local json = require "json"
 local font = resource.load_font("Roboto-Bold.ttf")
 
--- Load menu items from node.json
+-- Default menu items (overridden if node.json is used)
 local settings = {
     menu = {
         items = {
@@ -14,10 +15,13 @@ local settings = {
     }
 }
 
--- Watch for JSON updates in hosted GUI
+-- Watch for node.json updates
 util.data_mapper{
     ["config.json"] = function(raw)
-        settings = json.decode(raw)
+        local ok, parsed = pcall(json.decode, raw)
+        if ok and parsed.menu and parsed.menu.items then
+            settings = parsed
+        end
     end
 }
 
@@ -77,13 +81,13 @@ end
 
 -- Render loop
 function node.render()
-    gl.clear(0,0,0,1)
+    gl.clear(0,0,0,1) -- black background
 
     if in_menu then
         for i, item in ipairs(settings.menu.items) do
             local y = 100 + (i-1)*60
             if i == selected then
-                font:write(100, y, "> " .. item.label, 40, 1,1,0,1)
+                font:write(100, y, "> " .. item.label, 40, 1,1,0,1) -- yellow highlight
             else
                 font:write(100, y, item.label, 40, 1,1,1,1)
             end
