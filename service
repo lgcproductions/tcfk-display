@@ -3,30 +3,33 @@
 from hosted import device, node, config
 import time
 
-config.restart_on_update()  # Restart service on config changes (e.g., pin edits in dashboard)
+# Restart service when config changes in dashboard
+config.restart_on_update()
 
-# Your GPIO pins
-PINS = {
-    'power': 18,
-    'up': 23,
-    'down': 22,
-    'menu': 4,
-    'select': 24
+# Map button names to config keys
+BUTTONS = {
+    'power': config.gpio_power,
+    'up': config.gpio_up,
+    'down': config.gpio_down,
+    'menu': config.gpio_menu,
+    'select': config.gpio_select
 }
 
-# Monitor pins with pull-up
-for name, pin in PINS.items():
+# Monitor pins with pull-up resistors
+for name, pin in BUTTONS.items():
+    print("Monitoring %s on GPIO %d" % (name, pin))  # Debug
     device.gpio.monitor(pin, pull_up=True)
 
-# Track last state and time for edge detection and debouncing
-last_state = {pin: True for pin in PINS.values()}  # Assume initial high
-last_event_time = {pin: 0 for pin in PINS.values()}
-debounce_delay = 0.2  # 200ms
+# Track state and debounce
+last_state = {pin: True for pin in BUTTONS.values()}  # Assume initial high
+last_event_time = {pin: 0 for pin in BUTTONS.values()}
+debounce_delay = 0.2  # 200ms debounce
 
 print("Service started - monitoring GPIO pins")  # Debug log
 
+# Poll GPIO for changes
 for pin, state in device.gpio.poll_forever():
-    name = next((n for n, p in PINS.items() if p == pin), None)
+    name = next((n for n, p in BUTTONS.items() if p == pin), None)
     now = time.time()
     if name and not state and last_state[pin] and now - last_event_time[pin] > debounce_delay:
         # Falling edge (press, active-low)
