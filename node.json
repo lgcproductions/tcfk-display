@@ -3,6 +3,13 @@
   "permissions": {
     "gpio": "Allows access to GPIO pins for menu navigation"
   },
+  "config": {
+    "gpio_power": 18,
+    "gpio_up": 23,
+    "gpio_down": 22,
+    "gpio_menu": 4,
+    "gpio_select": 24
+  },
   "menu": {
     "title": "Main Menu",
     "type": "list",
